@@ -44,7 +44,15 @@ Fenetre::~Fenetre()
 /// Recherche et connecte un lecteur de carte USB
 void Fenetre::on_actionConnecter_le_lecteur_triggered()
 {
-    lecteur = new Lecteur();
+    try
+    {
+        lecteur = new Lecteur();
+    }
+    catch (Exceptions::ConnectionException ce)
+    {
+        throw "TODO: Lecteur non trouvé";
+    }
+
     lecteur->subscribe(this);
 }
 

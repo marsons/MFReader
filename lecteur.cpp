@@ -36,7 +36,7 @@ Lecteur::Lecteur()
     catch (Exceptions::LoadKeyException lke)
     {
         delete reader;
-        throw lke;
+        throw Exceptions::ConnectionException();
     }
 }
 
@@ -72,9 +72,18 @@ void Lecteur::pollCard()
 
     if (MI_OK == ISO14443_3_A_PollCard(reader, atq, sak, uid, &uid_len))
     {
+        updateCardType();
         checkTag(atq);
         updateInfos();
     }
+}
+
+void Lecteur::updateCardType()
+{
+    try
+        checkTag();
+    catch (Exceptions::NotAMifareClassicException namce)
+        carte = INCONNU;
 }
 
 void Lecteur::updateInfos()

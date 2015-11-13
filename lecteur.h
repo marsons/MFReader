@@ -46,6 +46,7 @@ private:
     unsigned char keyA[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
     unsigned char keyB[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
     void updateInfos();
+    void updateCardType();
     void checkTag(BYTE atq[2]);
     set<Observateur*> abonnes;
     ReaderName* reader;

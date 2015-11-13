@@ -54,7 +54,7 @@ void Fenetre::on_actionConnecter_le_lecteur_triggered()
     }
     catch (Exceptions::ConnectionException ce)
     {
-        throw QMessageBox::information(this, "Erreur", "Lecteur non trouvé ");
+        QMessageBox::information(this, "Erreur", "Lecteur non trouvé ");
     }
 }
 
@@ -92,7 +92,7 @@ void Fenetre::on_searchCardButton_clicked()
     if (lecteur != nullptr)
         lecteur->pollCard();
     else
-        throw "TODO Créer une boite de dialogue";
+        QMessageBox::information(this, "Erreur", "Lecteur non connecté ");
 }
 
 /// Met à jour le nom dans la carte

@@ -49,7 +49,7 @@ private:
     unsigned char keyB[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
     void updateInfos();
     void updateCardType(t_carte);
-    void checkTag(BYTE atq[2]);
+    bool checkTag(BYTE atq[2]);
     set<Observateur*> abonnes;
     ReaderName* reader;
 };
@@ -61,10 +61,6 @@ namespace Exceptions
   };
 
   class LoadKeyException
-  {
-  };
-
-  class NotAMifareClassicException
   {
   };
 

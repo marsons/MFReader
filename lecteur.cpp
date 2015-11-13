@@ -72,22 +72,34 @@ bool Lecteur::pollCard()
     BYTE uid[12];
     uint16_t uid_len = 12;
 
-    return MI_OK == ISO14443_3_A_PollCard(reader, atq, sak, uid, &uid_len);
+    if (MI_OK == ISO14443_3_A_PollCard(reader, atq, sak, uid, &uid_len))
+    {
+        if (! checkTag(atq))
+        {
+            updateCardType(INCONNU);
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    else
+    {
+        updateCardType(AUCUNE_CARTE);
+        return false;
+    }
 }
 
 void Lecteur::readCard()
 {
     if (pollCard())
     {
-        try
-        {
-            checkTag(atq);
-            updateInfos();
-        }
-        catch (Exceptions::NotAMifareClassicException namce)
-        {
-            updateCardType(INCONNU);
-        }
+        updateInfos();
+    }
+    else
+    {
+        updateCardType(AUCUNE_CARTE);
     }
 }
 
@@ -149,10 +161,9 @@ void Lecteur::updateCardType(t_carte type)
 }
 
 /// Vérifie si la carte est une carte Mifare Classic
-void Lecteur::checkTag(BYTE atq[2])
+bool Lecteur::checkTag(BYTE atq[2])
 {
-    if ((atq[1] != 0x00) || ((atq[0] != 0x02) && (atq[0] != 0x04) && (atq[0] != 0x18)))
-        throw Exceptions::NotAMifareClassicException();
+    return ((atq[1] == 0x00) && ((atq[0] == 0x02) && (atq[0] == 0x04) && (atq[0] == 0x18)));
 }
 
 /// Ajoute un observateur au lecteur (pour mettre à jour les données lues par le lecteur)

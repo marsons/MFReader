@@ -16,7 +16,7 @@ Lecteur::Lecteur()
     if (MI_OK != OpenCOM1(reader))
     {
         delete reader;
-        throw ConnectionException();
+        throw Exceptions::ConnectionException();
     }
 
     connectionOK();
@@ -24,7 +24,7 @@ Lecteur::Lecteur()
     if (MI_OK != RF_Power_Control(reader, true, 0))
     {
         delete reader;
-        throw ConnectionException();
+        throw Exceptions::ConnectionException();
     }
 
     try
@@ -33,7 +33,7 @@ Lecteur::Lecteur()
         loadKeys(keyA_ID, keyB_ID, 1);
         loadKeys(keyA_Credit, keyB_Credit, 2);
     }
-    catch (LoadKeyException lke)
+    catch (Exceptions::LoadKeyException lke)
     {
         delete reader;
         throw lke;
@@ -56,10 +56,10 @@ void Lecteur::connectionOK()
 void Lecteur::loadKeys(uint8_t keyA[6], uint8_t keyB[6], char block)
 {
     if (MI_OK != Mf_Classic_LoadKey(reader, Auth_KeyA, keyA, block))
-        throw LoadKeyException();
+        throw Exceptions::LoadKeyException();
 
     if (MI_OK != Mf_Classic_LoadKey(reader, Auth_KeyB, keyB, block))
-        throw LoadKeyException();
+        throw Exceptions::LoadKeyException();
 }
 
 /// Recherche une carte sur le lecteur et lit ses informations
@@ -94,7 +94,7 @@ void Lecteur::updateInfos()
 void Lecteur::checkTag(BYTE atq[2])
 {
     if ((atq[1] != 0x00) || ((atq[0] != 0x02) && (atq[0] != 0x04) && (atq[0] != 0x18)))
-        throw NotAMifareClassicException();
+        throw Exceptions::NotAMifareClassicException();
 }
 
 /// Ajoute un observateur au lecteur (pour mettre à jour les données lues par le lecteur)
@@ -122,7 +122,7 @@ string Lecteur::readName()
         string s = ss.str();
         return s;
     }
-    throw ReadException();
+    throw Exceptions::ReadException();
 }
 
 /// Récupère le prénom présent dans la carte
@@ -144,7 +144,7 @@ string Lecteur::readFirstname()
         string s = ss.str();
         return s;
     }
-    throw ReadException();
+    throw Exceptions::ReadException();
 }
 
 /// Récupère le crédit présent dans la carte
@@ -169,7 +169,7 @@ void Lecteur::writeName(const string& name)
         buffer[borne_max] = '\0';
 
     if (MI_OK != Mf_Classic_Write_Block(reader, true, B_NAME, buffer, Auth_KeyB, 1))
-        throw WriteException();
+        throw Exceptions::WriteException();
 }
 
 /// Modifie le prénom dans la carte
@@ -184,21 +184,21 @@ void Lecteur::writeFirstName(const string& firstName)
         buffer[borne_max] = '\0';
 
     if (MI_OK != Mf_Classic_Write_Block(reader, true, B_FIRST_NAME, buffer, Auth_KeyB, 1))
-        throw WriteException();
+        throw Exceptions::WriteException();
 }
 
 /// Incrémente le crédit dans la carte
 void Lecteur::incrementCredit()
 {
     if (MI_OK != Mf_Classic_Increment_Value(reader, true, B_CREDIT, 1, B_BACKUP, Auth_KeyB, 2))
-        throw WriteException();
+        throw Exceptions::WriteException();
 }
 
 /// Décrémente le crédit dans la carte
 void Lecteur::decrementCredit()
 {
     if (MI_OK != Mf_Classic_Decrement_Value(reader, true, B_CREDIT, 1, B_BACKUP, Auth_KeyB, 2))
-        throw WriteException();
+        throw Exceptions::WriteException();
 }
 
 /// Modifie les données dans la carte pour qu'elle soit utilisable par l'application
@@ -207,12 +207,12 @@ void Lecteur::enroll()
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 0, keyA_Credit, keyB_Credit,
                                               ACC_BLOCK_READWRITE, ACC_BLOCK_VALUE, ACC_BLOCK_VALUE, ACC_AUTH_NORMAL,
                                               Auth_KeyA))
-        throw UpdateAccessBlockException();
+        throw Exceptions::UpdateAccessBlockException();
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_ID, 0, keyA_ID, keyB_ID,
                                               ACC_BLOCK_READWRITE, ACC_BLOCK_READWRITE, ACC_BLOCK_READWRITE, ACC_AUTH_NORMAL,
                                               Auth_KeyA))
-        throw UpdateAccessBlockException();
+        throw Exceptions::UpdateAccessBlockException();
 
     uint8_t buffer[48];
     string chaine = "App identité";
@@ -221,7 +221,7 @@ void Lecteur::enroll()
         buffer[32+i] = chaine[i];
 
     if (MI_OK != Mf_Classic_Write_Sector(reader, true, S_ID, buffer, Auth_KeyA, 0))
-        throw WriteException();
+        throw Exceptions::WriteException();
 
     chaine = "App compteur";
     fill(buffer, buffer+4, '\0');
@@ -242,7 +242,7 @@ void Lecteur::enroll()
     buffer[31] = !B_BACKUP;
 
     if (MI_OK == Mf_Classic_Write_Sector(reader, true, S_ID, buffer, Auth_KeyA, 0))
-        throw WriteException();
+        throw Exceptions::WriteException();
 }
 
 /// Remet la carte au format initial
@@ -251,12 +251,12 @@ void Lecteur::format()
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 2, keyA, keyB,
                                               ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_AUTH_TRANSPORT,
                                               Auth_KeyB))
-        throw UpdateAccessBlockException();
+        throw Exceptions::UpdateAccessBlockException();
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_ID, 1, keyA, keyB,
                                               ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_AUTH_TRANSPORT,
                                               Auth_KeyB))
-        throw UpdateAccessBlockException();
+        throw Exceptions::UpdateAccessBlockException();
 
     throw "TODO : RAZ toutes les informations";
 }
@@ -267,17 +267,17 @@ Lecteur::~Lecteur()
     if (MI_OK != ISO14443_3_A_Halt(reader))
     {
         delete reader;
-        throw DeconnectionException();
+        throw Exceptions::DeconnectionException();
     }
     if (MI_OK != RF_Power_Control(reader, false, 0))
     {
         delete reader;
-        throw DeconnectionException();
+        throw Exceptions::DeconnectionException();
     }
     if (MI_OK != CloseCOM1(reader))
     {
         delete reader;
-        throw DeconnectionException();
+        throw Exceptions::DeconnectionException();
     }
     delete reader;
 }

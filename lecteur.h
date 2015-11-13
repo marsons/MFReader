@@ -51,28 +51,35 @@ private:
     ReaderName* reader;
 };
 
-class ConnectionException
+namespace Exceptions
 {
-};
+  class ConnectionException
+  {
+  };
 
-class LoadKeyException
-{
-};
+  class LoadKeyException
+  {
+  };
 
-class DeconnectionException
-{
-};
+  class NotAMifareClassicException
+  {
+  };
 
-class WriteException
-{
-};
+  class DeconnectionException
+  {
+  };
 
-class ReadException
-{
-};
+  class WriteException
+  {
+  };
 
-class UpdateAccessBlockException
-{
-};
+  class ReadException
+  {
+  };
+
+  class UpdateAccessBlockException
+  {
+  };
+}
 
 #endif // LECTEUR_H

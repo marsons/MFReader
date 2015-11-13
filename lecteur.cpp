@@ -50,6 +50,8 @@ void Lecteur::connectionOK()
     LEDBuzzer(reader, BUZZER_ON|LED_RED_ON|LED_YELLOW_ON|LED_GREEN_ON);
     Sleep(10);
     LEDBuzzer(reader, BUZZER_OFF|LED_RED_ON|LED_YELLOW_ON|LED_GREEN_ON);
+    Sleep(100);
+    LEDBuzzer(reader, LED_GREEN_OFF|LED_YELLOW_OFF|LED_RED_OFF);
 }
 
 /// Charge un couple de clés en mémoire
@@ -63,39 +65,85 @@ void Lecteur::loadKeys(uint8_t keyA[6], uint8_t keyB[6], char block)
 }
 
 /// Recherche une carte sur le lecteur et lit ses informations
-void Lecteur::pollCard()
+bool Lecteur::pollCard()
 {
     BYTE atq[2];
     BYTE sak[1];
     BYTE uid[12];
     uint16_t uid_len = 12;
 
-    if (MI_OK == ISO14443_3_A_PollCard(reader, atq, sak, uid, &uid_len))
-    {
-        updateCardType();
-        checkTag(atq);
-        updateInfos();
-    }
+    return MI_OK == ISO14443_3_A_PollCard(reader, atq, sak, uid, &uid_len);
 }
 
-void Lecteur::updateCardType()
+void Lecteur::readCard()
 {
-    try
-        checkTag();
-    catch (Exceptions::NotAMifareClassicException namce)
-        carte = INCONNU;
+    if (pollCard())
+    {
+        try
+        {
+            checkTag(atq);
+            updateInfos();
+        }
+        catch (Exceptions::NotAMifareClassicException namce)
+        {
+            updateCardType(INCONNU);
+        }
+    }
 }
 
 void Lecteur::updateInfos()
 {
-    string name = readName();
-    string firstName = readFirstname();
-    int credit = readCredit();
-    for (auto i=abonnes.begin() ; i!=abonnes.end() ; ++i)
+    try
     {
-        (*i)->updateName(name);
-        (*i)->updateFirstName(firstName);
-        (*i)->updateCredit(credit);
+        string name = readName();
+        string firstName = readFirstname();
+        int credit = readCredit();
+        for (auto i=abonnes.begin() ; i!=abonnes.end() ; ++i)
+        {
+            (*i)->updateName(name);
+            (*i)->updateFirstName(firstName);
+            (*i)->updateCredit(credit);
+        }
+    }
+    catch (Exceptions::ReadException re)
+    {
+        if (pollCard())
+        {
+            if (isFormatee())
+                updateCardType(FORMATEE);
+            else
+                updateCardType(INCONNU);
+        }
+        else
+        {
+            updateCardType(AUCUNE_CARTE);
+        }
+    }
+}
+
+bool Lecteur::isFormatee()
+{
+    unsigned char buffer[16];
+    return (MI_OK == Mf_Classic_Read_Block(reader, true, B_NAME, buffer, Auth_KeyA, 0));
+}
+
+void Lecteur::updateCardType(t_carte type)
+{
+    carte = type;
+    switch (type)
+    {
+    case INCONNU:
+        LEDBuzzer(reader, LED_RED_ON);
+        break;
+    case ENROLLEE:
+        LEDBuzzer(reader, LED_GREEN_ON);
+        break;
+    case FORMATEE:
+       LEDBuzzer(reader, LED_YELLOW_ON);
+       break;
+    case AUCUNE_CARTE:
+        LEDBuzzer(reader, LED_YELLOW_OFF|LED_GREEN_OFF|LED_RED_OFF);
+        break;
     }
 }
 

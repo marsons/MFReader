@@ -14,16 +14,30 @@ Lecteur::Lecteur()
 {
     reader = new ReaderName();
     if (MI_OK != OpenCOM1(reader))
+    {
+        delete reader;
         throw ConnectionException();
+    }
 
     connectionOK();
 
     if (MI_OK != RF_Power_Control(reader, true, 0))
-        throw PowerControlException();
+    {
+        delete reader;
+        throw ConnectionException();
+    }
 
-    loadKeys(keyA, keyB, 0);
-    loadKeys(keyA_ID, keyB_ID, 1);
-    loadKeys(keyA_Credit, keyB_Credit, 2);
+    try
+    {
+        loadKeys(keyA, keyB, 0);
+        loadKeys(keyA_ID, keyB_ID, 1);
+        loadKeys(keyA_Credit, keyB_Credit, 2);
+    }
+    catch (LoadKeyException lke)
+    {
+        delete reader;
+        throw lke;
+    }
 }
 
 /// Réalise un signal lumineux pour confirmer la connexion du lecteur
@@ -251,11 +265,19 @@ void Lecteur::format()
 Lecteur::~Lecteur()
 {
     if (MI_OK != ISO14443_3_A_Halt(reader))
-        throw HaltException();
+    {
+        delete reader;
+        throw DeconnectionException();
+    }
     if (MI_OK != RF_Power_Control(reader, false, 0))
-        throw PowerControlException();
+    {
+        delete reader;
+        throw DeconnectionException();
+    }
     if (MI_OK != CloseCOM1(reader))
-        throw CloseCOMException();
-
+    {
+        delete reader;
+        throw DeconnectionException();
+    }
     delete reader;
 }

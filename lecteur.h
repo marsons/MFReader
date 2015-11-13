@@ -31,6 +31,8 @@ public:
 
     ~Lecteur();
 private:
+    typedef enum { AUCUNE_CARTE, FORMATEE, ENROLLEE, INCONNU } t_carte;
+    t_carte carte = AUCUNE_CARTE;
     const int B_CREDIT=14;
     const int B_BACKUP=13;
     const int B_NAME=10;
@@ -53,23 +55,11 @@ class ConnectionException
 {
 };
 
-class PowerControlException
-{
-};
-
 class LoadKeyException
 {
 };
 
-class NotAMifareClassicException
-{
-};
-
-class CloseCOMException
-{
-};
-
-class HaltException
+class DeconnectionException
 {
 };
 

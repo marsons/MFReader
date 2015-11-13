@@ -21,6 +21,6 @@ HEADERS  += fenetre.h \
     lecteur.h \
     Observateur.h
 
-LIBS += -LE:\\Documents\\ESIREM\\4A\\Comm_Sans_Fil\\Thivan\\Test\\MifareReaderLast -lODALID
+LIBS += -LE:\\Documents\\ESIREM\\4A\\Comm_Sans_Fil\\Thivan\\Test\\MifareReaderLast\MFReader -lODALID
 
 FORMS    += fenetre.ui

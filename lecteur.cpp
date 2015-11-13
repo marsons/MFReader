@@ -104,6 +104,7 @@ void Lecteur::updateInfos()
             (*i)->updateFirstName(firstName);
             (*i)->updateCredit(credit);
         }
+        updateCardType(ENROLL);
     }
     catch (Exceptions::ReadException re)
     {

@@ -2,6 +2,7 @@
 #include "fenetre.h"
 #include "ui_fenetre.h"
 #include <stdint.h>
+#include <QMessageBox>
 #include "ODALID.h"
 
 /// Initialise la fenêtre de l'application
@@ -50,7 +51,7 @@ void Fenetre::on_actionConnecter_le_lecteur_triggered()
     }
     catch (Exceptions::ConnectionException ce)
     {
-        throw "TODO: Lecteur non trouvé";
+        throw QMessageBox::information(this, "Erreur", "Lecteur non trouvé ");
     }
 
     lecteur->subscribe(this);

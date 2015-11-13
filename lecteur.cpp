@@ -81,9 +81,13 @@ void Lecteur::pollCard()
 void Lecteur::updateCardType()
 {
     try
+    {
         checkTag();
+    }
     catch (Exceptions::NotAMifareClassicException namce)
+    {
         carte = INCONNU;
+    }
 }
 
 void Lecteur::updateInfos()

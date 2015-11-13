@@ -42,6 +42,9 @@ private slots:
 private:
     Ui::Fenetre *ui;
     Lecteur* lecteur;
+
+    void disable();
+    void enable();
 };
 
 #endif // FENETRE_H

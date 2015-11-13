@@ -12,6 +12,7 @@ Fenetre::Fenetre(QWidget *parent) :
 {
     ui->setupUi(this);
     lecteur = nullptr;
+    disable();
 }
 
 /// Met à jour le champ nom
@@ -48,12 +49,13 @@ void Fenetre::on_actionConnecter_le_lecteur_triggered()
     try
     {
         lecteur = new Lecteur();
+        lecteur->subscribe(this);
+        enable();
     }
     catch (Exceptions::ConnectionException ce)
     {
         throw QMessageBox::information(this, "Erreur", "Lecteur non trouvé ");
     }
-    lecteur->subscribe(this);
 }
 
 /// Déconnecte le lecteur de carte
@@ -61,6 +63,27 @@ void Fenetre::on_actionD_connecter_le_lecteur_triggered()
 {
     delete lecteur;
     lecteur = nullptr;
+    disable();
+}
+
+void Fenetre::disable()
+{
+    ui->firstNameValue->setDisabled(true);
+    ui->nameValue->setDisabled(true);
+    ui->incrementButton->setDisabled(true);
+    ui->decrementButton->setDisabled(true);
+    ui->enrollButton->setDisabled(true);
+    ui->formatButton->setDisabled(true);
+}
+
+void Fenetre::enable()
+{
+    ui->firstNameValue->setEnabled(true);
+    ui->nameValue->setEnabled(true);
+    ui->incrementButton->setEnabled(true);
+    ui->decrementButton->setEnabled(true);
+    ui->enrollButton->setEnabled(true);
+    ui->formatButton->setEnabled(true);
 }
 
 /// Recherche une carte sans contact sur le lecteur

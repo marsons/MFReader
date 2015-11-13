@@ -15,7 +15,9 @@ public:
     void subscribe(Observateur* obs);
     void loadKeys(uint8_t keyA[6], uint8_t keyB[6], char block);
     void connectionOK();
-    void pollCard();
+    bool pollCard();
+    void readCard();
+    bool isFormatee();
 
     string readName();
     string readFirstname();
@@ -46,7 +48,7 @@ private:
     unsigned char keyA[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
     unsigned char keyB[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
     void updateInfos();
-    void updateCardType();
+    void updateCardType(t_carte);
     void checkTag(BYTE atq[2]);
     set<Observateur*> abonnes;
     ReaderName* reader;

@@ -53,7 +53,6 @@ void Fenetre::on_actionConnecter_le_lecteur_triggered()
     {
         throw QMessageBox::information(this, "Erreur", "Lecteur non trouvé ");
     }
-
     lecteur->subscribe(this);
 }
 

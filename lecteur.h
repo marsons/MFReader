@@ -31,6 +31,8 @@ public:
     void enroll();
     void format();
 
+    bool has_card() const;
+
     ~Lecteur();
 private:
     typedef enum { AUCUNE_CARTE, FORMATEE, ENROLLEE, INCONNU } t_carte;

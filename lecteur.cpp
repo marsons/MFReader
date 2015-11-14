@@ -19,8 +19,6 @@ Lecteur::Lecteur()
         throw Exceptions::ConnectionException();
     }
 
-    connectionOK();
-
     if (MI_OK != RF_Power_Control(reader, true, 0))
     {
         delete reader;
@@ -38,6 +36,8 @@ Lecteur::Lecteur()
         delete reader;
         throw Exceptions::ConnectionException();
     }
+
+    connectionOK();
 }
 
 /// Réalise un signal lumineux pour confirmer la connexion du lecteur
@@ -103,6 +103,11 @@ void Lecteur::readCard()
     }
 }
 
+bool Lecteur::has_card() const
+{
+    return carte == FORMATEE || carte == ENROLLEE;
+}
+
 void Lecteur::updateInfos()
 {
     try
@@ -125,6 +130,7 @@ void Lecteur::updateInfos()
             if (isFormatee())
                 updateCardType(FORMATEE);
             else
+                pollCard();
                 updateCardType(INCONNU);
         }
         else

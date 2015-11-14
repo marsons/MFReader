@@ -12,7 +12,53 @@ Fenetre::Fenetre(QWidget *parent) :
 {
     ui->setupUi(this);
     lecteur = nullptr;
-    disable();
+    disableAll();
+    timer_carte = new QTimer();
+}
+
+/// Démarre le timer vérifiant si une carte est présente ou pas
+void Fenetre::start_timer()
+{
+    timer_carte->setInterval(1000);
+    timer_carte->start();
+    connect(timer_carte, SIGNAL(timeout()), this, SLOT(poll_card()));
+}
+
+/// Vérifie s'il y a une carte présente
+void Fenetre::poll_card()
+{
+    if (lecteur != nullptr)
+    {
+        if (lecteur->has_card()) // Il y avait une carte de détecté avant
+        {
+            if (! lecteur->pollCard())
+            {
+                razInfos();
+                disableCardEdit();
+            }
+        }
+        else // Il n'y avait pas de carte de détectée avant
+        {
+            if (lecteur->pollCard())
+            {
+                lecteur->readCard();
+                enableCardEdit();
+            }
+        }
+    }
+}
+
+void Fenetre::razInfos()
+{
+    updateName("");
+    updateFirstName("");
+    updateCredit(0);
+}
+
+/// Arrète le timer lorsque le lecteur est déconnecté
+void Fenetre::stop_timer()
+{
+    timer_carte->stop();
 }
 
 /// Met à jour le champ nom
@@ -39,10 +85,13 @@ void Fenetre::updateCredit(int credit)
 /// Termine la connexion avec le lecteur et ferme la fenêtre
 Fenetre::~Fenetre()
 {
+    timer_carte->stop();
+    delete timer_carte;
     delete ui;
     delete lecteur;
     lecteur = nullptr;
 }
+
 /// Recherche et connecte un lecteur de carte USB
 void Fenetre::on_actionConnecter_le_lecteur_triggered()
 {
@@ -50,7 +99,7 @@ void Fenetre::on_actionConnecter_le_lecteur_triggered()
     {
         lecteur = new Lecteur();
         lecteur->subscribe(this);
-        enable();
+        enablePollCard();
     }
     catch (Exceptions::ConnectionException ce)
     {
@@ -63,10 +112,32 @@ void Fenetre::on_actionD_connecter_le_lecteur_triggered()
 {
     delete lecteur;
     lecteur = nullptr;
-    disable();
+    disableAll();
 }
 
-void Fenetre::disable()
+
+void Fenetre::enableEnrolledEdit()
+{
+
+}
+
+void Fenetre::disableEnrolledEdit()
+{
+
+}
+
+void Fenetre::enableFormattedEdit()
+{
+
+}
+
+void Fenetre::disableFormattedEdit()
+{
+
+}
+
+/// Interdit l'édition des informations de carte
+void Fenetre::disableCardEdit()
 {
     ui->firstNameValue->setDisabled(true);
     ui->nameValue->setDisabled(true);
@@ -76,7 +147,8 @@ void Fenetre::disable()
     ui->formatButton->setDisabled(true);
 }
 
-void Fenetre::enable()
+/// Autorise l'édition des informations de carte
+void Fenetre::enableCardEdit()
 {
     ui->firstNameValue->setEnabled(true);
     ui->nameValue->setEnabled(true);
@@ -84,6 +156,25 @@ void Fenetre::enable()
     ui->decrementButton->setEnabled(true);
     ui->enrollButton->setEnabled(true);
     ui->formatButton->setEnabled(true);
+}
+
+/// Autorise la recherche d'une carte (à utiliser lorsqu'un lecteur est conecté)
+void Fenetre::enablePollCard()
+{
+    ui->searchCardButton->setEnabled(true);
+}
+
+/// Interdit la recherche de carte
+void Fenetre::disablePollCard()
+{
+    ui->searchCardButton->setDisabled(true);
+}
+
+/// Interdit toute action à l'exception de la connection de lecteur
+void Fenetre::disableAll()
+{
+    disablePollCard();
+    disableCardEdit();
 }
 
 /// Recherche une carte sans contact sur le lecteur

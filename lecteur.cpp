@@ -279,26 +279,39 @@ void Lecteur::decrementCredit()
 /// Modifie les données dans la carte pour qu'elle soit utilisable par l'application
 void Lecteur::enroll()
 {
-    if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 0, keyA_Credit, keyB_Credit,
-                                              ACC_BLOCK_READWRITE, ACC_BLOCK_VALUE, ACC_BLOCK_VALUE, ACC_AUTH_NORMAL,
-                                              Auth_KeyA))
-        throw Exceptions::UpdateAccessBlockException();
+    enrollID();
+    enrollCredit();
+}
+
+/// Remet la carte au format initial
+void Lecteur::format()
+{
+    formatID();
+    formatCredit();
+}
+
+void Lecteur::enrollID()
+{
+    string chaine = "App identité";
+    uint8_t buffer[16];
+
+    fill(buffer, buffer+16, '\0');
+    for (int i=0 ; i<max<int>(chaine.size(), 16) ; i++)
+        buffer[i] = chaine[i];
+
+    writeName("");
+    writeFirstName("");
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_FIRST_NAME-1, buffer, Auth_KeyA, 0))
+        throw Exceptions::WriteException();
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_ID, 0, keyA_ID, keyB_ID,
                                               ACC_BLOCK_READWRITE, ACC_BLOCK_READWRITE, ACC_BLOCK_READWRITE, ACC_AUTH_NORMAL,
                                               Auth_KeyA))
         throw Exceptions::UpdateAccessBlockException();
+}
 
-    uint8_t buffer[48];
-    string chaine = "App identité";
-    fill(buffer, buffer+48, '\0');
-    for (unsigned int i=0 ; i<chaine.size() ; ++i)
-        buffer[32+i] = chaine[i];
-
-    if (MI_OK != Mf_Classic_Write_Sector(reader, true, S_ID, buffer, Auth_KeyA, 0))
-        throw Exceptions::WriteException();
-
-    chaine = "App compteur";
+void Lecteur::enrollCredit()
+{
     fill(buffer, buffer+4, '\0');
     fill(buffer+4, buffer+8, !'\0');
     fill(buffer+8, buffer+12, '\0');
@@ -307,33 +320,66 @@ void Lecteur::enroll()
     buffer[14] = B_CREDIT;
     buffer[15] = !B_CREDIT;
 
-
-    fill(buffer+16, buffer+20, '\0');
-    fill(buffer+20, buffer+24, !'\0');
-    fill(buffer+24, buffer+28, '\0');
-    buffer[28] = B_BACKUP;
-    buffer[29] = !B_BACKUP;
-    buffer[30] = B_BACKUP;
-    buffer[31] = !B_BACKUP;
-
-    if (MI_OK == Mf_Classic_Write_Sector(reader, true, S_ID, buffer, Auth_KeyA, 0))
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_CREDIT, buffer, Auth_KeyA, 0))
         throw Exceptions::WriteException();
+
+    buffer[12] = B_BACKUP;
+    buffer[13] = !B_BACKUP;
+    buffer[14] = B_BACKUP;
+    buffer[15] = !B_BACKUP;
+
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_BACKUP, buffer, Auth_KeyA, 0))
+        throw Exceptions::WriteException();
+
+
+    chaine = "App compteur";
+    fill(buffer, buffer+16, '\0');
+    for (int i=0 ; i<max<int>(chaine.size(), 16) ; i++)
+        buffer[i] = chaine[i];
+
+    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 0))
+        throw Exceptions::WriteException();
+
+    if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 0, keyA_Credit, keyB_Credit,
+                                              ACC_BLOCK_READWRITE, ACC_BLOCK_VALUE, ACC_BLOCK_VALUE, ACC_AUTH_NORMAL,
+                                              Auth_KeyA))
+        throw Exceptions::UpdateAccessBlockException();
 }
 
-/// Remet la carte au format initial
-void Lecteur::format()
+void Lecteur::formatID()
 {
-    if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 2, keyA, keyB,
-                                              ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_AUTH_TRANSPORT,
-                                              Auth_KeyB))
-        throw Exceptions::UpdateAccessBlockException();
+    writeFirstName("");
+    writeName("");
+
+    char buffer[48];
+    fill(buffer, buffer+48, '\0');
+    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_FIRST_NAME-1, buffer, Auth_KeyA, 2))
+        throw Exceptions::WriteException();
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_ID, 1, keyA, keyB,
                                               ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_AUTH_TRANSPORT,
                                               Auth_KeyB))
         throw Exceptions::UpdateAccessBlockException();
 
-    throw "TODO : RAZ toutes les informations";
+}
+
+void Lecteur::formatCredit()
+{
+    char buffer[48];
+    fill(buffer, buffer+48, '\0');
+    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_CREDIT, buffer, Auth_KeyA, 2))
+        throw Exceptions::WriteException();
+
+    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP, buffer, Auth_KeyA, 2))
+        throw Exceptions::WriteException();
+
+    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 2))
+        throw Exceptions::WriteException();
+
+    if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 2, keyA, keyB,
+                                              ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_AUTH_TRANSPORT,
+                                              Auth_KeyB))
+        throw Exceptions::UpdateAccessBlockException();
 }
 
 /// Ferme la connexion avec le lecteur

@@ -52,6 +52,11 @@ private:
     void updateInfos();
     void updateCardType(t_carte);
     bool checkTag(BYTE atq[2]);
+
+    void enrollID();
+    void enrollCredit();
+    void formatID();
+    void formatCredit();
     set<Observateur*> abonnes;
     ReaderName* reader;
 };

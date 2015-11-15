@@ -116,7 +116,7 @@ void Fenetre::on_actionD_connecter_le_lecteur_triggered()
 }
 
 
-void Fenetre::enableEnrolledEdit()
+/*void Fenetre::enableEnrolledEdit()
 {
 
 }
@@ -134,7 +134,7 @@ void Fenetre::enableFormattedEdit()
 void Fenetre::disableFormattedEdit()
 {
 
-}
+}*/
 
 /// Interdit l'édition des informations de carte
 void Fenetre::disableCardEdit()
@@ -181,7 +181,10 @@ void Fenetre::disableAll()
 void Fenetre::on_searchCardButton_clicked()
 {
     if (lecteur != nullptr)
+    {
         lecteur->readCard();
+
+    }
     else
         QMessageBox::information(this, "Erreur", "Lecteur non connecté ");
 }

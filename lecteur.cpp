@@ -108,6 +108,11 @@ bool Lecteur::has_card() const
     return carte == FORMATEE || carte == ENROLLEE;
 }
 
+t_carte Lecteur::get_card_type()
+{
+    return carte;
+}
+
 void Lecteur::updateInfos()
 {
     try
@@ -130,8 +135,10 @@ void Lecteur::updateInfos()
             if (isFormatee())
                 updateCardType(FORMATEE);
             else
+            {
                 pollCard();
                 updateCardType(INCONNU);
+            }
         }
         else
         {
@@ -312,6 +319,9 @@ void Lecteur::enrollID()
 
 void Lecteur::enrollCredit()
 {
+    string chaine = "App identité";
+    uint8_t buffer[16];
+
     fill(buffer, buffer+4, '\0');
     fill(buffer+4, buffer+8, !'\0');
     fill(buffer+8, buffer+12, '\0');
@@ -337,8 +347,8 @@ void Lecteur::enrollCredit()
     for (int i=0 ; i<max<int>(chaine.size(), 16) ; i++)
         buffer[i] = chaine[i];
 
-    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 0))
-        throw Exceptions::WriteException();
+    /*if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 0))
+        throw Exceptions::WriteException();*/
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 0, keyA_Credit, keyB_Credit,
                                               ACC_BLOCK_READWRITE, ACC_BLOCK_VALUE, ACC_BLOCK_VALUE, ACC_AUTH_NORMAL,
@@ -351,7 +361,7 @@ void Lecteur::formatID()
     writeFirstName("");
     writeName("");
 
-    char buffer[48];
+    uint8_t buffer[48];
     fill(buffer, buffer+48, '\0');
     if (MI_OK == Mf_Classic_Write_Block(reader, true, B_FIRST_NAME-1, buffer, Auth_KeyA, 2))
         throw Exceptions::WriteException();
@@ -365,7 +375,7 @@ void Lecteur::formatID()
 
 void Lecteur::formatCredit()
 {
-    char buffer[48];
+    uint8_t buffer[48];
     fill(buffer, buffer+48, '\0');
     if (MI_OK == Mf_Classic_Write_Block(reader, true, B_CREDIT, buffer, Auth_KeyA, 2))
         throw Exceptions::WriteException();
@@ -373,8 +383,8 @@ void Lecteur::formatCredit()
     if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP, buffer, Auth_KeyA, 2))
         throw Exceptions::WriteException();
 
-    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 2))
-        throw Exceptions::WriteException();
+    /*if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 2))
+        throw Exceptions::WriteException();*/
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 2, keyA, keyB,
                                               ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_AUTH_TRANSPORT,

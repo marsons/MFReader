@@ -33,16 +33,18 @@ public:
 
     bool has_card() const;
 
+    t_carte get_card_type();
+
     ~Lecteur();
 private:
     typedef enum { AUCUNE_CARTE, FORMATEE, ENROLLEE, INCONNU } t_carte;
     t_carte carte = AUCUNE_CARTE;
-    const int B_CREDIT=7;
-    const int B_BACKUP=13;
+    const int B_CREDIT=2;
+    const int B_BACKUP=1;
     const int B_NAME=6;//10;
     const int B_FIRST_NAME=5;//9;
     const int S_ID=1;//2;
-    const int S_CREDIT=3;
+    const int S_CREDIT=0;
     unsigned char keyA_ID[6] = { 0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5 };
     unsigned char keyB_ID[6] = { 0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5 };
     unsigned char keyA_Credit[6] = { 0xC0, 0xC1, 0xC2, 0xC3, 0xC4, 0xC5 };

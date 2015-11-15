@@ -2,6 +2,7 @@
 #define FENETRE_H
 
 #include <QMainWindow>
+#include <QTimer>
 #include "lecteur.h"
 #include "Observateur.h"
 
@@ -39,12 +40,21 @@ private slots:
 
     void on_formatButton_clicked();
 
+    void poll_card();
+
 private:
     Ui::Fenetre *ui;
     Lecteur* lecteur;
+    QTimer* timer_carte=nullptr;
 
-    void disable();
-    void enable();
+    void disableAll();
+    void start_timer();
+    void stop_timer();
+    void enablePollCard();
+    void disablePollCard();
+    void enableCardEdit();
+    void disableCardEdit();
+    void razInfos();
 };
 
 #endif // FENETRE_H

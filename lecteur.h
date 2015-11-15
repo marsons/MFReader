@@ -35,7 +35,7 @@ public:
 private:
     typedef enum { AUCUNE_CARTE, FORMATEE, ENROLLEE, INCONNU } t_carte;
     t_carte carte = AUCUNE_CARTE;
-    const int B_CREDIT=14;
+    const int B_CREDIT=7;
     const int B_BACKUP=13;
     const int B_NAME=10;
     const int B_FIRST_NAME=9;

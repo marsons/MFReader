@@ -90,7 +90,7 @@ void Fenetre::enable()
 void Fenetre::on_searchCardButton_clicked()
 {
     if (lecteur != nullptr)
-        lecteur->pollCard();
+        lecteur->readCard();
     else
         QMessageBox::information(this, "Erreur", "Lecteur non connecté ");
 }
@@ -103,8 +103,6 @@ void Fenetre::on_nameValue_editingFinished()
         string name = ui->nameValue->text().toStdString();
         lecteur->writeName(name);
     }
-    else
-        throw "TODO Créer une boite de dialogue précisant qu'il n'y a pas de carte ou de lecteur";
 }
 
 /// Met à jour le prénom dans la carte
@@ -115,8 +113,6 @@ void Fenetre::on_firstNameValue_editingFinished()
         string firstName = ui->firstNameValue->text().toStdString();
         lecteur->writeFirstName(firstName);
     }
-    else
-        throw "TODO Créer une boite de dialogue précisant qu'il n'y a pas de carte ou de lecteur";
 }
 
 /// Modifie la carte pour en faire une carte au format désiré
@@ -124,8 +120,6 @@ void Fenetre::on_enrollButton_clicked()
 {
     if (lecteur != nullptr)
         lecteur->enroll();
-    else
-        throw "TODO Créer une boite de dialogue précisant qu'il n'y a pas de carte ou de lecteur";
 }
 
 /// Augmente le crédit dans la carte
@@ -133,8 +127,6 @@ void Fenetre::on_incrementButton_clicked()
 {
     if (lecteur != nullptr)
         lecteur->incrementCredit();
-    else
-        throw "TODO Créer une boite de dialogue précisant qu'il n'y a pas de carte ou de lecteur";
 }
 
 /// Diminue le crédit dans la carte
@@ -142,8 +134,6 @@ void Fenetre::on_decrementButton_clicked()
 {
     if (lecteur != nullptr)
         lecteur->decrementCredit();
-    else
-        throw "TODO Créer une boite de dialogue précisant qu'il n'y a pas de carte ou de lecteur";
 }
 
 /// Formate la carte pour la remettre à l'état initial
@@ -151,6 +141,4 @@ void Fenetre::on_formatButton_clicked()
 {
     if (lecteur != nullptr)
         lecteur->format();
-    else
-        throw "TODO Créer une boite de dialogue précisant qu'il n'y a pas de carte ou de lecteur";
 }

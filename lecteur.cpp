@@ -74,7 +74,7 @@ bool Lecteur::pollCard()
 
     if (MI_OK == ISO14443_3_A_PollCard(reader, atq, sak, uid, &uid_len))
     {
-        if (! checkTag(atq))
+        if (checkTag(atq))
         {
             updateCardType(INCONNU);
             return false;
@@ -223,7 +223,7 @@ int Lecteur::readCredit()
     if (MI_OK == Mf_Classic_Read_Value(reader, true, B_CREDIT, &val, Auth_KeyA, 2))
         return val;
 
-    // throw ReadException();
+    //throw Exceptions::ReadException();
 }
 
 /// Modifie le nom dans la carte

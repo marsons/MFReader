@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>442</width>
-    <height>192</height>
+    <height>248</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,13 +24,6 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QPushButton" name="searchCardButton">
-         <property name="text">
-          <string>Recherche carte</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QPushButton" name="enrollButton">
          <property name="text">
@@ -143,7 +136,7 @@
      <x>0</x>
      <y>0</y>
      <width>442</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuConnexion">

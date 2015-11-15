@@ -11,6 +11,8 @@ using namespace std;
 class Lecteur
 {
 public:
+    typedef enum { AUCUNE_CARTE, FORMATEE, ENROLLEE, INCONNU } t_carte;
+
     Lecteur();
     void subscribe(Observateur* obs);
     void loadKeys(uint8_t keyA[6], uint8_t keyB[6], char block);
@@ -36,8 +38,8 @@ public:
     t_carte get_card_type();
 
     ~Lecteur();
+
 private:
-    typedef enum { AUCUNE_CARTE, FORMATEE, ENROLLEE, INCONNU } t_carte;
     t_carte carte = AUCUNE_CARTE;
     const int B_CREDIT=2;
     const int B_BACKUP=1;

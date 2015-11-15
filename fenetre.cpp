@@ -20,6 +20,7 @@ Fenetre::Fenetre(QWidget *parent) :
 void Fenetre::start_timer()
 {
     timer_carte->setInterval(1000);
+    timer_carte->setSingleShot(false);
     timer_carte->start();
     connect(timer_carte, SIGNAL(timeout()), this, SLOT(poll_card()));
 }
@@ -34,7 +35,7 @@ void Fenetre::poll_card()
             if (! lecteur->pollCard())
             {
                 razInfos();
-                disableCardEdit();
+                disableAll();
             }
         }
         else // Il n'y avait pas de carte de détectée avant
@@ -42,7 +43,16 @@ void Fenetre::poll_card()
             if (lecteur->pollCard())
             {
                 lecteur->readCard();
-                enableCardEdit();
+                disableAll();
+                switch (lecteur->get_card_type())
+                {
+                case Lecteur::ENROLLEE:
+                    enableCardEdit();
+                    break;
+                case Lecteur::FORMATEE:
+                    enableFormattedEdit();
+                    break;
+                }
             }
         }
     }
@@ -99,6 +109,7 @@ void Fenetre::on_actionConnecter_le_lecteur_triggered()
     {
         lecteur = new Lecteur();
         lecteur->subscribe(this);
+        start_timer();
         enablePollCard();
     }
     catch (Exceptions::ConnectionException ce)
@@ -112,50 +123,36 @@ void Fenetre::on_actionD_connecter_le_lecteur_triggered()
 {
     delete lecteur;
     lecteur = nullptr;
+    stop_timer();
     disableAll();
 }
 
-
-/*void Fenetre::enableEnrolledEdit()
-{
-
-}
-
-void Fenetre::disableEnrolledEdit()
-{
-
-}
-
-void Fenetre::enableFormattedEdit()
-{
-
-}
-
-void Fenetre::disableFormattedEdit()
-{
-
-}*/
-
-/// Interdit l'édition des informations de carte
-void Fenetre::disableCardEdit()
+void Fenetre::enableEnrolledEdit()
 {
     ui->firstNameValue->setDisabled(true);
     ui->nameValue->setDisabled(true);
     ui->incrementButton->setDisabled(true);
     ui->decrementButton->setDisabled(true);
-    ui->enrollButton->setDisabled(true);
     ui->formatButton->setDisabled(true);
 }
 
-/// Autorise l'édition des informations de carte
-void Fenetre::enableCardEdit()
+void Fenetre::disableEnrolledEdit()
 {
     ui->firstNameValue->setEnabled(true);
     ui->nameValue->setEnabled(true);
     ui->incrementButton->setEnabled(true);
     ui->decrementButton->setEnabled(true);
-    ui->enrollButton->setEnabled(true);
     ui->formatButton->setEnabled(true);
+}
+
+void Fenetre::enableFormattedEdit()
+{
+    ui->enrollButton->setEnabled(true);
+}
+
+void Fenetre::disableFormattedEdit()
+{
+    ui->enrollButton->setDisabled(true);
 }
 
 /// Autorise la recherche d'une carte (à utiliser lorsqu'un lecteur est conecté)
@@ -175,18 +172,6 @@ void Fenetre::disableAll()
 {
     disablePollCard();
     disableCardEdit();
-}
-
-/// Recherche une carte sans contact sur le lecteur
-void Fenetre::on_searchCardButton_clicked()
-{
-    if (lecteur != nullptr)
-    {
-        lecteur->readCard();
-
-    }
-    else
-        QMessageBox::information(this, "Erreur", "Lecteur non connecté ");
 }
 
 /// Met à jour le nom dans la carte

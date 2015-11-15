@@ -26,8 +26,6 @@ private slots:
 
     void on_actionD_connecter_le_lecteur_triggered();
 
-    void on_searchCardButton_clicked();
-
     void on_nameValue_editingFinished();
 
     void on_firstNameValue_editingFinished();
@@ -50,8 +48,8 @@ private:
     void disableAll();
     void start_timer();
     void stop_timer();
-    void enablePollCard();
-    void disablePollCard();
+    void enableFormattedEdit();
+    void disableFormattedEdit();
     void enableCardEdit();
     void disableCardEdit();
     void razInfos();

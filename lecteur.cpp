@@ -108,7 +108,7 @@ bool Lecteur::has_card() const
     return carte == FORMATEE || carte == ENROLLEE;
 }
 
-t_carte Lecteur::get_card_type()
+Lecteur::t_carte Lecteur::get_card_type()
 {
     return carte;
 }
@@ -233,10 +233,11 @@ string Lecteur::readFirstname()
 int Lecteur::readCredit()
 {
     uint32_t val;
+    pollCard();
     if (MI_OK == Mf_Classic_Read_Value(reader, true, B_CREDIT, &val, Auth_KeyA, 2))
         return val;
 
-    //throw Exceptions::ReadException();
+    throw Exceptions::ReadException();
 }
 
 /// Modifie le nom dans la carte
@@ -274,12 +275,16 @@ void Lecteur::incrementCredit()
 {
     if (MI_OK != Mf_Classic_Increment_Value(reader, true, B_CREDIT, 1, B_BACKUP, Auth_KeyB, 2))
         throw Exceptions::WriteException();
+    if (MI_OK != Mf_Classic_Restore_Value(reader, true, B_BACKUP, B_CREDIT, Auth_KeyB, 2))
+        throw Exceptions::WriteException();
 }
 
 /// Décrémente le crédit dans la carte
 void Lecteur::decrementCredit()
 {
     if (MI_OK != Mf_Classic_Decrement_Value(reader, true, B_CREDIT, 1, B_BACKUP, Auth_KeyB, 2))
+        throw Exceptions::WriteException();
+    if (MI_OK != Mf_Classic_Restore_Value(reader, true, B_BACKUP, B_CREDIT, Auth_KeyB, 2))
         throw Exceptions::WriteException();
 }
 
@@ -293,8 +298,8 @@ void Lecteur::enroll()
 /// Remet la carte au format initial
 void Lecteur::format()
 {
-    formatID();
     formatCredit();
+    formatID();
 }
 
 void Lecteur::enrollID()
@@ -306,54 +311,37 @@ void Lecteur::enrollID()
     for (int i=0 ; i<max<int>(chaine.size(), 16) ; i++)
         buffer[i] = chaine[i];
 
-    writeName("");
-    writeFirstName("");
-    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_FIRST_NAME-1, buffer, Auth_KeyA, 0))
-        throw Exceptions::WriteException();
-
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_ID, 0, keyA_ID, keyB_ID,
                                               ACC_BLOCK_READWRITE, ACC_BLOCK_READWRITE, ACC_BLOCK_READWRITE, ACC_AUTH_NORMAL,
                                               Auth_KeyA))
         throw Exceptions::UpdateAccessBlockException();
+
+    writeName("");
+    writeFirstName("");
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_FIRST_NAME-1, buffer, Auth_KeyA, 1))
+        throw Exceptions::WriteException();
 }
 
 void Lecteur::enrollCredit()
 {
-    string chaine = "App identité";
-    uint8_t buffer[16];
-
-    fill(buffer, buffer+4, '\0');
-    fill(buffer+4, buffer+8, !'\0');
-    fill(buffer+8, buffer+12, '\0');
-    buffer[12] = B_CREDIT;
-    buffer[13] = !B_CREDIT;
-    buffer[14] = B_CREDIT;
-    buffer[15] = !B_CREDIT;
-
-    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_CREDIT, buffer, Auth_KeyA, 0))
-        throw Exceptions::WriteException();
-
-    buffer[12] = B_BACKUP;
-    buffer[13] = !B_BACKUP;
-    buffer[14] = B_BACKUP;
-    buffer[15] = !B_BACKUP;
-
-    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_BACKUP, buffer, Auth_KeyA, 0))
-        throw Exceptions::WriteException();
-
-
-    chaine = "App compteur";
-    fill(buffer, buffer+16, '\0');
-    for (int i=0 ; i<max<int>(chaine.size(), 16) ; i++)
-        buffer[i] = chaine[i];
-
-    /*if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 0))
-        throw Exceptions::WriteException();*/
-
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 0, keyA_Credit, keyB_Credit,
                                               ACC_BLOCK_READWRITE, ACC_BLOCK_VALUE, ACC_BLOCK_VALUE, ACC_AUTH_NORMAL,
                                               Auth_KeyA))
         throw Exceptions::UpdateAccessBlockException();
+
+    char* chaine = "App compteur";
+    uint8_t buffer[16];
+    for (int i=0 ; i<16 ; ++i)
+        buffer[i] = chaine[i];
+
+    if (MI_OK != Mf_Classic_Write_Value(reader, true, B_CREDIT, 0, Auth_KeyB, 2))
+        throw Exceptions::WriteException();
+
+    if (MI_OK != Mf_Classic_Write_Value(reader, true, B_BACKUP, 0, Auth_KeyB, 2))
+        throw Exceptions::WriteException();
+
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyB, 2))
+        throw Exceptions::WriteException();
 }
 
 void Lecteur::formatID()
@@ -361,9 +349,9 @@ void Lecteur::formatID()
     writeFirstName("");
     writeName("");
 
-    uint8_t buffer[48];
-    fill(buffer, buffer+48, '\0');
-    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_FIRST_NAME-1, buffer, Auth_KeyA, 2))
+    uint8_t buffer[16];
+    fill(buffer, buffer+16, '\0');
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_FIRST_NAME-1, buffer, Auth_KeyA, 1))
         throw Exceptions::WriteException();
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_ID, 1, keyA, keyB,
@@ -375,21 +363,23 @@ void Lecteur::formatID()
 
 void Lecteur::formatCredit()
 {
-    uint8_t buffer[48];
-    fill(buffer, buffer+48, '\0');
-    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_CREDIT, buffer, Auth_KeyA, 2))
-        throw Exceptions::WriteException();
-
-    if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP, buffer, Auth_KeyA, 2))
-        throw Exceptions::WriteException();
-
-    /*if (MI_OK == Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 2))
-        throw Exceptions::WriteException();*/
+    uint8_t buffer[16];
+    fill(buffer, buffer+16, '\0');
 
     if (MI_OK != Mf_Classic_UpdadeAccessBlock(reader, true, S_CREDIT, 2, keyA, keyB,
                                               ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_BLOCK_TRANSPORT, ACC_AUTH_TRANSPORT,
                                               Auth_KeyB))
         throw Exceptions::UpdateAccessBlockException();
+
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_CREDIT, buffer, Auth_KeyA, 0))
+        throw Exceptions::WriteException();
+
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_BACKUP, buffer, Auth_KeyA, 0))
+        throw Exceptions::WriteException();
+
+    if (MI_OK != Mf_Classic_Write_Block(reader, true, B_BACKUP-1, buffer, Auth_KeyA, 0))
+        throw Exceptions::WriteException();
+
 }
 
 /// Ferme la connexion avec le lecteur

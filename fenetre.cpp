@@ -47,7 +47,7 @@ void Fenetre::poll_card()
                 switch (lecteur->get_card_type())
                 {
                 case Lecteur::ENROLLEE:
-                    enableCardEdit();
+                    enableEnrolledEdit();
                     break;
                 case Lecteur::FORMATEE:
                     enableFormattedEdit();
@@ -110,7 +110,6 @@ void Fenetre::on_actionConnecter_le_lecteur_triggered()
         lecteur = new Lecteur();
         lecteur->subscribe(this);
         start_timer();
-        enablePollCard();
     }
     catch (Exceptions::ConnectionException ce)
     {
@@ -129,20 +128,20 @@ void Fenetre::on_actionD_connecter_le_lecteur_triggered()
 
 void Fenetre::enableEnrolledEdit()
 {
-    ui->firstNameValue->setDisabled(true);
-    ui->nameValue->setDisabled(true);
-    ui->incrementButton->setDisabled(true);
-    ui->decrementButton->setDisabled(true);
-    ui->formatButton->setDisabled(true);
-}
-
-void Fenetre::disableEnrolledEdit()
-{
     ui->firstNameValue->setEnabled(true);
     ui->nameValue->setEnabled(true);
     ui->incrementButton->setEnabled(true);
     ui->decrementButton->setEnabled(true);
     ui->formatButton->setEnabled(true);
+}
+
+void Fenetre::disableEnrolledEdit()
+{
+    ui->firstNameValue->setDisabled(true);
+    ui->nameValue->setDisabled(true);
+    ui->incrementButton->setDisabled(true);
+    ui->decrementButton->setDisabled(true);
+    ui->formatButton->setDisabled(true);
 }
 
 void Fenetre::enableFormattedEdit()
@@ -155,23 +154,11 @@ void Fenetre::disableFormattedEdit()
     ui->enrollButton->setDisabled(true);
 }
 
-/// Autorise la recherche d'une carte (à utiliser lorsqu'un lecteur est conecté)
-void Fenetre::enablePollCard()
-{
-    ui->searchCardButton->setEnabled(true);
-}
-
-/// Interdit la recherche de carte
-void Fenetre::disablePollCard()
-{
-    ui->searchCardButton->setDisabled(true);
-}
-
 /// Interdit toute action à l'exception de la connection de lecteur
 void Fenetre::disableAll()
 {
-    disablePollCard();
-    disableCardEdit();
+    disableEnrolledEdit();
+    disableFormattedEdit();
 }
 
 /// Met à jour le nom dans la carte
@@ -198,26 +185,40 @@ void Fenetre::on_firstNameValue_editingFinished()
 void Fenetre::on_enrollButton_clicked()
 {
     if (lecteur != nullptr)
+    {
         lecteur->enroll();
+        enableEnrolledEdit();
+        disableFormattedEdit();
+    }
 }
 
 /// Augmente le crédit dans la carte
 void Fenetre::on_incrementButton_clicked()
 {
     if (lecteur != nullptr)
+    {
         lecteur->incrementCredit();
+        updateCredit(lecteur->readCredit());
+    }
 }
 
 /// Diminue le crédit dans la carte
 void Fenetre::on_decrementButton_clicked()
 {
     if (lecteur != nullptr)
+    {
         lecteur->decrementCredit();
+        updateCredit(lecteur->readCredit());
+    }
 }
 
 /// Formate la carte pour la remettre à l'état initial
 void Fenetre::on_formatButton_clicked()
 {
     if (lecteur != nullptr)
+    {
         lecteur->format();
+        disableEnrolledEdit();
+        enableFormattedEdit();
+    }
 }

@@ -50,8 +50,8 @@ private:
     void stop_timer();
     void enableFormattedEdit();
     void disableFormattedEdit();
-    void enableCardEdit();
-    void disableCardEdit();
+    void enableEnrolledEdit();
+    void disableEnrolledEdit();
     void razInfos();
 };
 
